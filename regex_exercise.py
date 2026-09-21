@@ -1,6 +1,6 @@
 import re
 
-# task 1
+# Task 1
 log_lines = [
     "2024-01-15 10:02:11 INFO Server started on port 8080",
     "2024-01-15 10:03:47 ERROR Failed to connect to database",
@@ -33,4 +33,43 @@ f = re.fullmatch(
 )
 
 print(f is not None)
+
+
+# Task 2
+def reverse_complement(sequence):
+    complement = {
+        "A": "T",
+        "T": "A",
+        "C": "G",
+        "G": "C"
+    }
+
+    return "".join(complement[base] for base in sequence)[::-1]
+
+
+class SequencingRead:
+    def __init__(self, read_id, sequence):
+        self.read_id = read_id
+        self.sequence = sequence
+
+    def matches_mid_pair(self, forward_mid, reverse_mid):
+        comp_reverse = reverse_complement(reverse_mid)
+        return re.match(rf"^{forward_mid}.+{comp_reverse}$", self.sequence) is not None
+
+    def trim_mid_pair(self, forward_mid, reverse_mid):
+        if self.matches_mid_pair(forward_mid, reverse_mid):
+            return self.sequence[len(forward_mid):-len(reverse_mid)]
+        else:
+            return None
+
+    def describe(self):
+        return f"{type(self).__name__} {self.read_id} ({len(self.sequence)} bp)"
+
+
+if __name__ == "__main__":
+    r1 = SequencingRead("demo_1", "AGCTTCGA" + "N" * 20 + reverse_complement("TGCAGGTC"))
+    print(r1.describe())
+    print(r1.matches_mid_pair("AGCTTCGA", "TGCAGGTC"))  # True
+    print(r1.matches_mid_pair("CGATCGAT", "GCTAGCTA"))  # False
+    print(r1.trim_mid_pair("AGCTTCGA", "TGCAGGTC"))  # 20 x "N"
 
